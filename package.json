@@ -1,8 +1,37 @@
 {
   "name": "frapp",
   "version": "0.0.1",
+  "description": "Tiny typescript library to build front-end applications.",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "license": "MIT",
+  "repository": "hyperstart/frapp",
+  "files": ["dist"],
+  "author": "Anthony Ferrando <ferrando.tony@gmail.com>",
+  "scripts": {
+    "clean": "rimraf dist .rpt2_cache",
+    "build": "npm run clean && rollup -c && bundlesize && rimraf .rpt2_cache"
+  },
   "dependencies": {
     "picodom": "1.0.2"
-  }
+  },
+  "devDependencies": {
+    "bundlesize": "^0.15.3",
+    "jest": "21.2.1",
+    "prettier": "1.7.4",
+    "rimraf": "2.6.2",
+    "rollup": "0.50.0",
+    "rollup-plugin-commonjs": "8.2.6",
+    "rollup-plugin-node-resolve": "3.0.0",
+    "rollup-plugin-typescript2": "0.8.0",
+    "rollup-plugin-uglify": "2.0.1",
+    "typescript": "2.6.1",
+    "uglify-js": "^2.7.5"
+  },
+  "bundlesize": [
+    {
+      "path": "./dist/index.js",
+      "maxSize": "2 kB"
+    }
+  ]
 }
