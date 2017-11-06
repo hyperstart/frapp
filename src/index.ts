@@ -1,44 +1,63 @@
 import { h, patch, VNode } from "picodom"
+export { h }
 
-export type State = number | string | boolean | Array<any>
-
-export interface Update<M extends Module<InternalModule>> {
+export interface Update<M> {
   (value: Partial<M>): Partial<M>
 }
 
-export type ActionResult = {}
+export type primitive =
+  | null
+  | undefined
+  | boolean
+  | number
+  | string
+  | Array<any>
 
-export interface InternalAction<M extends Module<InternalModule>> {
-  (module: M, update: Update<M>): ActionResult
+export interface Module {
+  [key: string]: Module | primitive | Function
+  View?: () => VNode<any>
 }
 
-export interface InternalModule {
-  [key: string]: InternalModule | State | InternalAction<Module<any>>
+export type StateImpl<S extends primitive> = S
+
+export interface Func0<R = any> {
+  (): R
 }
 
-export interface View {
-  (): VNode<any>
+export type Func0Impl<F extends Func0> = F | any
+
+export interface Func {
+  (...args): any
 }
 
-export type Module<M extends InternalModule> = {
-  view?: () => VNode<any>
+export type FuncImpl<M, F extends Func> = (module: M, update: Update<M>) => F
+
+export type ModuleImpl<M extends Module> = {
+  [K in keyof M]:
+    | StateImpl<M[K] & primitive>
+    | ModuleImpl<M[K] & Module>
+    | FuncImpl<M, M[K] & Func>
+    | Func0Impl<M[K] & Func0>
 }
 
-export function app<M extends InternalModule>(
-  module: M,
+export function frapp<M extends Module>(
+  module: ModuleImpl<M>,
   container?: HTMLElement
-): Module<M> {
+): M {
   let root = (container || document.body).children[0]
   let node = vnode(root, [].map)
   let patchLock = false
-  let globalModule = partiallyApply(module, [])
+  let globalModule = partiallyApply<M>(module, [])
 
   repaint()
 
   return globalModule
 
-  function partiallyApply(module: any, path: string[]): Module<M> {
-    const result = {}
+  function partiallyApply<M2 extends Module>(
+    module: ModuleImpl<M2>,
+    path: string[]
+  ): M2 {
+    const result: any = {}
     Object.keys(module).forEach(key => {
       if (typeof module[key] === "function") {
         // partially apply function
@@ -66,8 +85,15 @@ export function app<M extends InternalModule>(
 
     function update(slice) {
       if (slice) {
-        set(globalModule, path, partiallyApply(slice, path))
-        render()
+        globalModule = set(
+          globalModule,
+          path,
+          assign(
+            assign({}, get(globalModule, path)),
+            partiallyApply(slice, path)
+          )
+        )
+        repaint()
       }
       return slice
     }
@@ -112,16 +138,16 @@ export function app<M extends InternalModule>(
     )
   }
   function repaint() {
-    if (globalModule.view && !patchLock) {
+    if (globalModule.View && !patchLock) {
       patchLock = !patchLock
-      setTimeout(render, patchLock)
+      setTimeout(render)
     }
   }
 
   function render() {
     patchLock = !patchLock
-    if (!patchLock) {
-      const result = globalModule.view()
+    const result = globalModule.View()
+    if (result && !patchLock) {
       root = patch(node, result, root as HTMLElement)
     }
   }

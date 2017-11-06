@@ -1,7 +1,7 @@
 {
   "name": "frapp",
-  "version": "0.0.1",
-  "description": "Tiny typescript library to build front-end applications.",
+  "version": "0.0.2",
+  "description": "Tiny typescript library to build fractal webapps.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -10,12 +10,14 @@
   "author": "Anthony Ferrando <ferrando.tony@gmail.com>",
   "scripts": {
     "clean": "rimraf dist .rpt2_cache",
-    "build": "npm run clean && rollup -c && bundlesize && rimraf .rpt2_cache"
+    "build": "npm run clean && rollup -c && bundlesize && rimraf .rpt2_cache",
+    "test": "jest"
   },
   "dependencies": {
     "picodom": "1.0.2"
   },
   "devDependencies": {
+    "@types/jest": "^21.1.5",
     "bundlesize": "^0.15.3",
     "jest": "21.2.1",
     "prettier": "1.7.4",
@@ -25,6 +27,7 @@
     "rollup-plugin-node-resolve": "3.0.0",
     "rollup-plugin-typescript2": "0.8.0",
     "rollup-plugin-uglify": "2.0.1",
+    "ts-jest": "^21.1.4",
     "typescript": "2.6.1",
     "uglify-js": "^2.7.5"
   },
@@ -33,5 +36,12 @@
       "path": "./dist/index.js",
       "maxSize": "2 kB"
     }
-  ]
+  ],
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/tests/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
+  }
 }
