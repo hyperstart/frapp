@@ -11,7 +11,8 @@
   "scripts": {
     "clean": "rimraf dist .rpt2_cache",
     "build": "npm run clean && rollup -c && bundlesize && rimraf .rpt2_cache",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "bundlesize": "bundlesize"
   },
   "dependencies": {
     "picodom": "1.0.2"
@@ -34,7 +35,7 @@
   "bundlesize": [
     {
       "path": "./dist/index.js",
-      "maxSize": "2 kB"
+      "maxSize": "4 kB"
     }
   ],
   "jest": {

@@ -14,6 +14,7 @@ install:
 
 script:
   - npm test
+  - npm bundlesize
   - codecov
 
 notifications:
