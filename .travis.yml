@@ -14,8 +14,8 @@ install:
 
 script:
   - npm test
-  - npm bundlesize
   - codecov
+  - npm run build
 
 notifications:
   email: false
