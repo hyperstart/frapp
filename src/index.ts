@@ -1,10 +1,17 @@
 import { h, patch, VNode } from "picodom"
 export { h }
 
+/**
+ * The update function: takes a Partial of the app, and merges it into the current app's slice.
+ * This function partially apply any function in the value, and returns the partially applied object.
+ */
 export interface Update<A> {
   (value: Partial<A>): Partial<A>
 }
 
+/**
+ * Primitive types allowed in the app object
+ */
 export type primitive =
   | null
   | undefined
@@ -13,8 +20,22 @@ export type primitive =
   | string
   | Array<any>
 
+/**
+ * The App's interface.
+ */
 export interface App {
+  /**
+   * Each property of an app should be:
+   *  - another app (hence, fractal!)
+   *  - a function that has been partially applied
+   *  - a piece of state, i.e. a primitive type or an array of primitive types
+   */
   [key: string]: App | primitive | Function
+  /** 
+   * If exists, this function is re-triggered after every update (debounced).
+   * 
+   * @returns the VNode tree to be merged in the DOM or falsy if no update wanted
+   */
   View?: () => VNode<any>
 }
 
@@ -32,6 +53,9 @@ export interface Func {
 
 export type FuncImpl<A, F extends Func> = (app: A, update: Update<A>) => F
 
+/**
+ * Type of an app's implementation for the given app's API (i.e. the interface of the App, AFTER all functions have been partially applied).
+ */
 export type AppImpl<A extends App> = {
   [K in keyof A]:
     | StateImpl<A[K] & primitive>
@@ -40,12 +64,15 @@ export type AppImpl<A extends App> = {
     | Func0Impl<A[K] & Func0>
 }
 
+/**
+ * Partially applies the given app's implementation and returns the app's API.
+ */
 export function frapp<A extends App>(
   app: AppImpl<A>,
   container?: HTMLElement
 ): A {
-  let root = (container || document.body).children[0]
-  let node = vnode(root, [].map)
+  let root = container || document.body
+  let node = vnode(root.children[0], [].map)
   let patchLock = false
   let global = partiallyApply<A>(app, [])
 
@@ -115,7 +142,7 @@ export function frapp<A extends App>(
     patchLock = !patchLock
     const result = global.View()
     if (result && !patchLock) {
-      root = patch(node, result, root as HTMLElement)
+      patch(node, result, root as HTMLElement)
     }
   }
 }
@@ -138,7 +165,7 @@ export function set<T = any, V = any, R = any>(
   if (path.length === 0) {
     return (value as any) as R
   }
-  return assign(assign(Array.isArray(target) ? [] : {}, target), {
+  return assign(Array.isArray(target) ? [] : {}, target, {
     [path[0]]:
       path.length > 1 ? set(target[path[0]], path.slice(1), value) : value
   })
@@ -149,12 +176,19 @@ export function merge<T = any, V = any, R = any>(
   path: Path,
   value: V
 ): R {
-  return set(target, path, assign(assign({}, get(target, path)), value))
+  return set(
+    target,
+    path,
+    assign(Array.isArray(value) ? [] : {}, get(target, path), value)
+  )
 }
 
-function assign(to: any, from: any): any {
-  for (let i in from) {
-    to[i] = from[i]
+function assign(target: any, obj: any, obj2: any): any {
+  for (let i in obj) {
+    target[i] = obj[i]
   }
-  return to
+  for (let i in obj2) {
+    target[i] = obj2[i]
+  }
+  return target
 }

@@ -26,7 +26,6 @@ test("Apps are sliced", done => {
       return (
         <div
           oncreate={() => {
-            console.log("body: " + document.body.innerHTML)
             expect(document.body.innerHTML).toEqual(
               "<div><div>2</div><div>3</div><div>4</div></div>"
             )

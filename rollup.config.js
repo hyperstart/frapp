@@ -8,7 +8,8 @@ export default {
   output: {
     file: "dist/index.js",
     format: "umd",
-    name: "frapp"
+    name: "frapp",
+    sourcemap: true
   },
   plugins: [
     nodeResolve({

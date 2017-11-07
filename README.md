@@ -6,10 +6,10 @@
 Tiny fractal app framework strongly inspired by [Hyperapp](https://github.com/hyperapp/hyperapp) written in typescript.
 
 Features:
- - tiny (< 4kb)
+ - tiny size
  - reactive API (state -> view -> actions -> new state)
  - immutable state allows for powerful debug tools
- - fractal design: compose dub--apps to form bigger apps
+ - fractal design: make apps composed of apps (it's apps all the way down!)
  - dynamically add sub-apps to main app
 
 # Examples & How to
