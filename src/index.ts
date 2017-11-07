@@ -1,8 +1,8 @@
 import { h, patch, VNode } from "picodom"
 export { h }
 
-export interface Update<M> {
-  (value: Partial<M>): Partial<M>
+export interface Update<A> {
+  (value: Partial<A>): Partial<A>
 }
 
 export type primitive =
@@ -13,8 +13,8 @@ export type primitive =
   | string
   | Array<any>
 
-export interface Module {
-  [key: string]: Module | primitive | Function
+export interface App {
+  [key: string]: App | primitive | Function
   View?: () => VNode<any>
 }
 
@@ -30,39 +30,39 @@ export interface Func {
   (...args): any
 }
 
-export type FuncImpl<M, F extends Func> = (module: M, update: Update<M>) => F
+export type FuncImpl<A, F extends Func> = (app: A, update: Update<A>) => F
 
-export type ModuleImpl<M extends Module> = {
-  [K in keyof M]:
-    | StateImpl<M[K] & primitive>
-    | ModuleImpl<M[K] & Module>
-    | FuncImpl<M, M[K] & Func>
-    | Func0Impl<M[K] & Func0>
+export type AppImpl<A extends App> = {
+  [K in keyof A]:
+    | StateImpl<A[K] & primitive>
+    | AppImpl<A[K] & A>
+    | FuncImpl<A, A[K] & Func>
+    | Func0Impl<A[K] & Func0>
 }
 
-export function frapp<M extends Module>(
-  module: ModuleImpl<M>,
+export function frapp<A extends App>(
+  app: AppImpl<A>,
   container?: HTMLElement
-): M {
+): A {
   let root = (container || document.body).children[0]
   let node = vnode(root, [].map)
   let patchLock = false
-  let globalModule = partiallyApply<M>(module, [])
+  let global = partiallyApply<A>(app, [])
 
   repaint()
 
-  return globalModule
+  return global
 
-  function partiallyApply<M2 extends Module>(
-    module: ModuleImpl<M2>,
+  function partiallyApply<A2 extends App>(
+    app: AppImpl<A2>,
     path: string[]
-  ): M2 {
+  ): A2 {
     const result: any = {}
-    Object.keys(module).forEach(key => {
-      if (typeof module[key] === "function") {
+    Object.keys(app).forEach(key => {
+      if (typeof app[key] === "function") {
         // partially apply function
         result[key] = function() {
-          let value = module[key](get(globalModule, path), update)
+          let value = app[key](get(global, path), update)
 
           if (typeof value === "function") {
             value = value.apply(null, arguments)
@@ -70,57 +70,24 @@ export function frapp<M extends Module>(
 
           return value
         }
-      } else if (
-        typeof module[key] === "object" &&
-        !Array.isArray(module[key])
-      ) {
+      } else if (typeof app[key] === "object" && !Array.isArray(app[key])) {
         // recursive call
-        result[key] = partiallyApply(module[key], path.concat(key))
+        result[key] = partiallyApply(app[key], path.concat(key))
       } else {
         // just set
-        result[key] = module[key]
+        result[key] = app[key]
       }
     })
     return result
 
     function update(slice) {
       if (slice) {
-        globalModule = set(
-          globalModule,
-          path,
-          assign(
-            assign({}, get(globalModule, path)),
-            partiallyApply(slice, path)
-          )
-        )
+        slice = partiallyApply(slice, path)
+        global = merge(global, path, slice)
         repaint()
       }
       return slice
     }
-  }
-
-  function assign(to, from) {
-    for (let i in from) {
-      to[i] = from[i]
-    }
-    return to
-  }
-
-  function set(target, path, value) {
-    if (path.length === 0) {
-      return value
-    }
-    return assign(assign({}, target), {
-      [path[0]]:
-        path.length > 1 ? set(target[path[0]], path.slice(1), value) : value
-    })
-  }
-
-  function get(target, path) {
-    for (var i = 0; i < path.length; i++) {
-      target = target[path[i]]
-    }
-    return target
   }
 
   function vnode(element, map) {
@@ -138,7 +105,7 @@ export function frapp<M extends Module>(
     )
   }
   function repaint() {
-    if (globalModule.View && !patchLock) {
+    if (global.View && !patchLock) {
       patchLock = !patchLock
       setTimeout(render)
     }
@@ -146,9 +113,48 @@ export function frapp<M extends Module>(
 
   function render() {
     patchLock = !patchLock
-    const result = globalModule.View()
+    const result = global.View()
     if (result && !patchLock) {
       root = patch(node, result, root as HTMLElement)
     }
   }
+}
+
+export type Path = Array<string | number>
+
+export function get<T = any, R = any>(target: T, path: Path): R {
+  let result: any = target
+  for (var i = 0; i < path.length; i++) {
+    result = result ? result[path[i]] : result
+  }
+  return result as R
+}
+
+export function set<T = any, V = any, R = any>(
+  target: T,
+  path: Path,
+  value: V
+): R {
+  if (path.length === 0) {
+    return (value as any) as R
+  }
+  return assign(assign(Array.isArray(target) ? [] : {}, target), {
+    [path[0]]:
+      path.length > 1 ? set(target[path[0]], path.slice(1), value) : value
+  })
+}
+
+export function merge<T = any, V = any, R = any>(
+  target: T,
+  path: Path,
+  value: V
+): R {
+  return set(target, path, assign(assign({}, get(target, path)), value))
+}
+
+function assign(to: any, from: any): any {
+  for (let i in from) {
+    to[i] = from[i]
+  }
+  return to
 }

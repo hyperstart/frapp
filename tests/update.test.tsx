@@ -4,7 +4,7 @@ beforeEach(() => {
   document.body.innerHTML = ""
 })
 
-test("Update returns arguments", done => {
+test("Update returns its argument.", done => {
   const module: any = frapp({
     count: 0,
     add: (module, u) => data => u({ count: module.count + data }),

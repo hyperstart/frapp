@@ -4,24 +4,38 @@ beforeEach(() => {
   document.body.innerHTML = ""
 })
 
-test("Actions in view", done => {
-  const module = frapp({
-    count: 0,
-    up: (m, u) => u({ count: m.count + 1 }),
-    View: m => {
-      if (m.count < 1) {
-        m.up()
+test("Apps are sliced", done => {
+  const counter = value => ({
+    count: value,
+    up: (app, u) => u({ count: app.count + 1 }),
+    View: app => {
+      if (app.count == value) {
+        app.up()
       }
-      expect(m.count).toEqual(1)
+      expect(app.count).toEqual(value + 1)
 
+      return <div>{app.count}</div>
+    }
+  })
+
+  frapp({
+    counter1: counter(1),
+    counter2: counter(2),
+    counter3: counter(3),
+    View: app => {
       return (
         <div
           oncreate={() => {
-            expect(m.count).toEqual(1)
+            console.log("body: " + document.body.innerHTML)
+            expect(document.body.innerHTML).toEqual(
+              "<div><div>2</div><div>3</div><div>4</div></div>"
+            )
             done()
           }}
         >
-          {m.count}
+          <app.counter1.View />
+          <app.counter2.View />
+          <app.counter3.View />
         </div>
       )
     }
