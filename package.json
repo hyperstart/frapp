@@ -13,7 +13,7 @@
     "build": "npm run clean && rollup -c && bundlesize && rimraf .rpt2_cache",
     "test": "jest --coverage",
     "release":
-      "npm run build && npm test && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
+      "npm run build && npm test && git commit -am %npm_package_version% && git tag %npm_package_version% && git push && git push --tags && npm publish"
   },
   "dependencies": {
     "picodom": "1.0.2"
