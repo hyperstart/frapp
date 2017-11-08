@@ -194,3 +194,5 @@ function assign(target: any, obj: any, obj2: any): any {
   }
   return target
 }
+
+export default frapp
