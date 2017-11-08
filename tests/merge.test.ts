@@ -18,7 +18,7 @@ test("Merge objects with empty path", done => {
 test("Merge objects with path", done => {
   expect(merge({ value: 1 }, ["1", 2], { value: 42 })).toEqual({
     value: 1,
-    "1": { [2]: { value: 42 } }
+    "1": { 2: { value: 42 } }
   })
   done()
 })
