@@ -53,3 +53,33 @@ test("Api call gets debounced", done => {
     )
   }).fire()
 })
+
+test("Api calls in view gets debounced", done => {
+  frapp({
+    count: 0,
+    up: (app, u) => u({ count: app.count + 1 }),
+    fire: app => {
+      app.up()
+      app.up()
+      app.up()
+      app.up()
+      app.up()
+    },
+    View: app => {
+      if (app.count === 0) {
+        app.fire()
+      }
+
+      return (
+        <div
+          oncreate={() => {
+            expect(document.body.innerHTML).toBe("<div>5</div>")
+            done()
+          }}
+        >
+          {app.count}
+        </div>
+      )
+    }
+  })
+})

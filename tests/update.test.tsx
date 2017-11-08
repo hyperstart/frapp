@@ -19,7 +19,7 @@ test("Update returns its argument.", done => {
   done()
 })
 
-test("Update returns partially applied apps.", done => {
+test("Update partially applies app and returns it.", done => {
   const counter = {
     count: 0,
     add: (app, u) => data => u({ count: app.count + data }),
@@ -31,7 +31,6 @@ test("Update returns partially applied apps.", done => {
   })
 
   const applied = myApp.addCounter()
-  console.log("applied: ", applied)
   expect(applied.add(5)).toEqual({ count: 5 })
   expect(applied.add(3)).toEqual({ count: 8 })
   expect(applied.up()).toEqual({ count: 9 })
