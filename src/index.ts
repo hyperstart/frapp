@@ -5,7 +5,7 @@ export { h }
  * The update function: takes a Partial of the app, and merges it into the current app's slice.
  * This function partially apply any function in the value, and returns the partially applied object.
  */
-export interface Update<A> {
+export interface Update<A = any> {
   (value: Partial<A>): Partial<A>
 }
 
