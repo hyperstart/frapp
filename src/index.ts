@@ -71,7 +71,7 @@ export function frapp<A extends App>(
   app: AppImpl<A>,
   container?: HTMLElement
 ): A {
-  let root = container || document.body
+  const root = container || document.body
   let node = vnode(root.children[0], [].map)
   let patchLock = false
   let global = partiallyApply<A>(app, [])
@@ -132,7 +132,8 @@ export function frapp<A extends App>(
     )
   }
   function repaint() {
-    if (global.View && !patchLock) {
+    // if repaint is called multiple times between 2 renders (or during), only trigger one re-render
+    if (!patchLock) {
       patchLock = !patchLock
       setTimeout(render)
     }
@@ -140,9 +141,10 @@ export function frapp<A extends App>(
 
   function render() {
     patchLock = !patchLock
-    const result = global.View()
+    const result = global.View ? global.View() : null
     if (result && !patchLock) {
       patch(node, result, root as HTMLElement)
+      node = result
     }
   }
 }
