@@ -1,6 +1,5 @@
 import { h, patch, VNode } from "picodom"
 export { h }
-
 /**
  * The update function: takes a Partial of the app, and merges it into the current app's slice.
  * This function partially apply any function in the value, and returns the partially applied object.
@@ -21,16 +20,16 @@ export type primitive =
   | Array<any>
 
 /**
- * The App's interface.
+ * The Wired App's interface, i.e. with all its functions pre-wired to (app, update).
  */
-export interface App {
+export interface WiredApp {
   /**
-   * Each property of an app should be:
-   *  - another app (hence, fractal!)
-   *  - a function that has been partially applied
+   * Each property of a wired app should be:
+   *  - another wired app (hence, fractal!)
+   *  - a wired function (i.e. partially applied to (app, update))
    *  - a piece of state, i.e. a primitive type or an array of primitive types
    */
-  [key: string]: App | primitive | Function
+  [key: string]: WiredApp | primitive | Function
   /** 
    * If exists, this function is re-triggered after every update (debounced).
    * 
@@ -39,51 +38,63 @@ export interface App {
   View?: () => VNode<any>
 }
 
-export type StateImpl<S extends primitive> = S
+/**
+ * The type for a (wired) piece of state
+ */
+export type State<S extends primitive> = S
 
-export interface Func0<R = any> {
+/**
+ * The interface for a wired function with 0 arguments.
+ */
+export interface WiredFn0<R = any> {
   (): R
 }
 
-export type Func0Impl<F extends Func0> = F | any
+/**
+ * The type for a function (non-wired) with 0 arguments.
+ */
+export type Fn0<F extends WiredFn0> = F | any
 
-export interface Func {
+/**
+ * The interface for a wired function with any number of parameters.
+ */
+export interface WiredFn {
   (...args): any
 }
 
-export type FuncImpl<A, F extends Func> = (app: A, update: Update<A>) => F
+/**
+ * The type for a function (non-wired) with any number of parameters.
+ */
+export type Fn<A, F extends WiredFn> = (app: A, update: Update<A>) => F
 
 /**
- * Type of an app's implementation for the given app's API (i.e. the interface of the App, AFTER all functions have been partially applied).
+ * Type of an app for the given wired app (i.e. the interface of the App, AFTER all functions have been partially applied).
  */
-export type AppImpl<A extends App> = {
+export type App<A extends WiredApp> = {
   [K in keyof A]:
-    | StateImpl<A[K] & primitive>
-    | AppImpl<A[K] & A>
-    | FuncImpl<A, A[K] & Func>
-    | Func0Impl<A[K] & Func0>
+    | State<A[K] & primitive>
+    | App<A[K] & A>
+    | Fn<A, A[K] & WiredFn>
+    | Fn0<A[K] & WiredFn0>
 }
 
 /**
- * Partially applies the given app's implementation and returns the app's API.
+ * Partially applies (wires) the given app's implementation and returns the app's API.
  */
-export function frapp<A extends App>(
-  app: AppImpl<A>,
+export function frapp<A extends WiredApp>(
+  app: App<A>,
   container?: HTMLElement
 ): A {
   const root = container || document.body
   let node = vnode(root.children[0], [].map)
   let patchLock = false
-  let global = partiallyApply<A>(app, [])
+  let global = wire<A>(app, [])
 
   repaint()
 
   return global
 
-  function partiallyApply<A2 extends App>(
-    app: AppImpl<A2>,
-    path: string[]
-  ): A2 {
+  function wire<A2 extends WiredApp>(app: App<A2>, path: string[]): A2 {
     const result: any = {}
     Object.keys(app).forEach(key => {
       if (typeof app[key] === "function") {
@@ -99,7 +110,7 @@ export function frapp<A extends App>(
         }
       } else if (typeof app[key] === "object" && !Array.isArray(app[key])) {
         // recursive call
-        result[key] = partiallyApply(app[key], path.concat(key))
+        result[key] = wire(app[key], path.concat(key))
       } else {
         // just set
         result[key] = app[key]
@@ -109,7 +120,7 @@ export function frapp<A extends App>(
 
     function update(slice) {
       if (slice) {
-        slice = partiallyApply(slice, path)
+        slice = wire(slice, path)
         global = merge(global, path, slice)
         repaint()
       }
@@ -149,8 +160,14 @@ export function frapp<A extends App>(
   }
 }
 
+/**
+ * Path: Array<string | number>
+ */
 export type Path = Array<string | number>
 
+/**
+ * Get the value at the given path in the given target, or undefined if path doesn't exists.
+ */
 export function get<T = any, R = any>(target: T, path: Path): R {
   let result: any = target
   for (var i = 0; i < path.length; i++) {
@@ -159,6 +176,10 @@ export function get<T = any, R = any>(target: T, path: Path): R {
   return result as R
 }
 
+/**
+ * Immutable set: set the value at the given path in the given target and returns a new target.
+ * Creates the necessary objects/arrays if the path doesn't exist.
+ */
 export function set<T = any, V = any, R = any>(
   target: T,
   path: Path,
@@ -173,6 +194,10 @@ export function set<T = any, V = any, R = any>(
   })
 }
 
+/**
+ * Immutable merge: merges the given value and the existing value (if any) at the path in the target using Object.assign() and return a new target. 
+ * Creates the necessary objects/arrays if the path doesn't exist.
+ */
 export function merge<T = any, V = any, R = any>(
   target: T,
   path: Path,
