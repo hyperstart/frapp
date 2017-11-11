@@ -21,16 +21,16 @@ export type primitive =
   | Array<any>
 
 /**
- * The App's interface.
+ * The Wired App's interface, i.e. with all its functions pre-wired to (app, update).
  */
-export interface App {
+export interface WiredApp {
   /**
-   * Each property of an app should be:
-   *  - another app (hence, fractal!)
-   *  - a function that has been partially applied
+   * Each property of a wired app should be:
+   *  - another wired app (hence, fractal!)
+   *  - a wired function (i.e. partially applied to (app, update))
    *  - a piece of state, i.e. a primitive type or an array of primitive types
    */
-  [key: string]: App | primitive | Function
+  [key: string]: WiredApp | primitive | Function
   /** 
    * If exists, this function is re-triggered after every update (debounced).
    * 
@@ -39,49 +39,120 @@ export interface App {
   View?: () => VNode<any>
 }
 
-export type StateImpl<S extends primitive> = S
+/**
+ * The type for a (wired) piece of state
+ */
+export type State<S extends primitive> = S
 
-export interface Func0<R = any> {
+/**
+ * The interface for a wired function with 0 arguments.
+ */
+export interface WiredFn0<R = any> {
   (): R
 }
 
-export type Func0Impl<F extends Func0> = F | any
+/**
+ * The type for a function (non-wired) with 0 arguments.
+ */
+export type Fn0<F extends WiredFn0> = F | any
 
-export interface Func {
+/**
+ * The interface for a wired function with any number of parameters.
+ */
+export interface WiredFn {
   (...args): any
 }
 
-export type FuncImpl<A, F extends Func> = (app: A, update: Update<A>) => F
+/**
+ * The type for a function (non-wired) with any number of parameters.
+ */
+export type Fn<A, F extends WiredFn> = (app: A, update: Update<A>) => F
 
 /**
- * Type of an app's implementation for the given app's API (i.e. the interface of the App, AFTER all functions have been partially applied).
+ * Type of an app for the given wired app (i.e. the interface of the App, AFTER all functions have been partially applied).
  */
-export type AppImpl<A extends App> = {
+export type App<A extends WiredApp> = {
   [K in keyof A]:
-    | StateImpl<A[K] & primitive>
-    | AppImpl<A[K] & A>
-    | FuncImpl<A, A[K] & Func>
-    | Func0Impl<A[K] & Func0>
+    | State<A[K] & primitive>
+    | App<A[K] & A>
+    | Fn<A, A[K] & WiredFn>
+    | Fn0<A[K] & WiredFn0>
+}
+
+export interface WireContext<A extends WiredApp> {
+  root: A
+  path: Path
+}
+
+export interface WireEnhancer<A extends WiredApp> {
+  (next: WireEnhancer<A>): (context: WireContext<A>, app: any) => any
+}
+
+export interface UpdateContext<A extends WiredApp> {
+  root: A
+  path: Path
+  fnName: string
+  fnArgs: any[]
+}
+
+export interface UpdateEnhancer<A extends WiredApp> {
+  (next: UpdateEnhancer<A>): (context: UpdateContext<A>, update: any) => any
+}
+
+export interface FnCallContext<A extends WiredApp> {
+  root: A
+  path: Path
+  fn: string
+}
+
+export interface FnCallEnhancer<A extends WiredApp> {
+  (next: FnCallEnhancer<A>): (context: FnCallContext<A>, args: any[]) => any
+}
+
+export interface AppEnhancer<A extends WiredApp> {
+  wire?: WireEnhancer<A>
+  update?: UpdateEnhancer<A>
+  fnCall?: FnCallEnhancer<A>
+}
+
+export interface Frapp<A extends WiredApp> {
+  <A extends WiredApp>(app: App<A>, container?: HTMLElement): A
 }
 
 /**
  * Partially applies the given app's implementation and returns the app's API.
  */
-export function frapp<A extends App>(
-  app: AppImpl<A>,
+export function frapp<A extends WiredApp>(
+  app: App<A>,
   container?: HTMLElement
-): A {
-  const root = container || document.body
-  let node = vnode(root.children[0], [].map)
+): A
+/**
+ * Applies the given enhancers and returns the frapp() function.
+ */
+export function frapp<A extends WiredApp>(enhancers: AppEnhancer<A>): Frapp<A>
+export function frapp<A extends WiredApp>(
+  app: any,
+  container?: HTMLElement
+): any {
+  const rootElement = container || document.body
+  let rootNode = vnode(rootElement.children[0], [].map)
   let patchLock = false
-  let global = partiallyApply<A>(app, [])
 
-  repaint()
+  if (Array.isArray(app)) {
+    // enhancers
+    return null
+  } else {
+    // app
 
-  return global
+    let rootApp = partiallyApply<A>(app, [])
 
-  function partiallyApply<A2 extends App>(
-    app: AppImpl<A2>,
+    repaint()
+
+    return rootApp
+  }
+
+  function partiallyApply<A2 extends WiredApp>(
+    app: App<A2>,
     path: string[]
   ): A2 {
     const result: any = {}
@@ -89,7 +160,7 @@ export function frapp<A extends App>(
       if (typeof app[key] === "function") {
         // partially apply function
         result[key] = function() {
-          let value = app[key](get(global, path), update)
+          let value = app[key](get(rootApp, path), update)
 
           if (typeof value === "function") {
             value = value.apply(null, arguments)
@@ -110,7 +181,7 @@ export function frapp<A extends App>(
     function update(slice) {
       if (slice) {
         slice = partiallyApply(slice, path)
-        global = merge(global, path, slice)
+        rootApp = merge(rootApp, path, slice)
         repaint()
       }
       return slice
@@ -141,10 +212,10 @@ export function frapp<A extends App>(
 
   function render() {
     patchLock = !patchLock
-    const result = global.View ? global.View() : null
+    const result = rootApp.View ? rootApp.View() : null
     if (result && !patchLock) {
-      patch(node, result, root as HTMLElement)
-      node = result
+      patch(rootNode, result, rootElement as HTMLElement)
+      rootNode = result
     }
   }
 }
