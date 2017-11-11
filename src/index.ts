@@ -56,6 +56,7 @@ export type Fn<A, F extends WiredFn> = (app: A, update: Update<A>) => F
 
 /**
  * Type of an app for the given wired app.
+ * @param A The type of the wired app.
  */
 export type AppImpl<A> = {
   [K in keyof A]:
