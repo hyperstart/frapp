@@ -2,7 +2,10 @@
   "name": "frapp",
   "version": "0.1.1",
   "description": "Tiny typescript library to build fractal webapps.",
-  "main": "dist/index.js",
+  "main": "dist/frapp.js",
+  "minified:main": "dist/frapp.min.js",
+  "jsnext:main": "dist/frapp.es.js",
+  "module": "dist/frapp.es.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
   "repository": "hyperstart/frapp",
@@ -10,7 +13,11 @@
   "author": "Anthony Ferrando <ferrando.tony@gmail.com>",
   "scripts": {
     "clean": "rimraf dist .rpt2_cache",
-    "build": "npm run clean && rollup -c && bundlesize && rimraf .rpt2_cache",
+    "build":
+      "npm run clean && npm run build:module && npm run build:main && npm run build:min",
+    "build:main": "rollup -c && rimraf .rpt2_cache",
+    "build:min": "rollup -c --min && bundlesize && rimraf .rpt2_cache",
+    "build:module": "rollup -c --es && rimraf .rpt2_cache",
     "test": "jest --coverage",
     "release":
       "npm run build && npm test && git commit -am %npm_package_version% && git tag %npm_package_version% && git push && git push --tags && npm publish"
@@ -35,7 +42,7 @@
   },
   "bundlesize": [
     {
-      "path": "./dist/index.js",
+      "path": "./dist/frapp.min.js",
       "maxSize": "4 kB"
     }
   ],
