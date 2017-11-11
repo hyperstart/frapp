@@ -1,5 +1,11 @@
-import { h, patch, VNode } from "picodom"
+import { h, patch, VNode as PicoNode } from "picodom"
 export { h }
+
+/**
+ * The VNode returned by components
+ */
+export type VNode<Props = any> = PicoNode<Props>
+
 /**
  * The update function: takes a Partial of the app, and merges it into the current app's slice.
  * This function partially apply any function in the value, and returns the partially applied object.
@@ -20,25 +26,6 @@ export type primitive =
   | Array<any>
 
 /**
- * The Wired App's interface, i.e. with all its functions pre-wired to (app, update).
- */
-export interface WiredApp {
-  /**
-   * Each property of a wired app should be:
-   *  - another wired app (hence, fractal!)
-   *  - a wired function (i.e. partially applied to (app, update))
-   *  - a piece of state, i.e. a primitive type or an array of primitive types
-   */
-  [key: string]: WiredApp | primitive | Function
-  /** 
-   * If exists, this function is re-triggered after every update (debounced).
-   * 
-   * @returns the VNode tree to be merged in the DOM or falsy if no update wanted
-   */
-  View?: () => VNode<any>
-}
-
-/**
  * The type for a (wired) piece of state
  */
 export type State<S extends primitive> = S
@@ -53,7 +40,7 @@ export interface WiredFn0<R = any> {
 /**
  * The type for a function (non-wired) with 0 arguments.
  */
-export type Fn0<F extends WiredFn0> = F | any
+export type Fn0<A, F extends WiredFn0> = (app: A, update: Update<A>) => F | any
 
 /**
  * The interface for a wired function with any number of parameters.
@@ -68,23 +55,20 @@ export interface WiredFn {
 export type Fn<A, F extends WiredFn> = (app: A, update: Update<A>) => F
 
 /**
- * Type of an app for the given wired app (i.e. the interface of the App, AFTER all functions have been partially applied).
+ * Type of an app for the given wired app.
  */
-export type App<A extends WiredApp> = {
+export type AppImpl<A> = {
   [K in keyof A]:
     | State<A[K] & primitive>
-    | App<A[K] & A>
+    | AppImpl<A[K]>
     | Fn<A, A[K] & WiredFn>
-    | Fn0<A[K] & WiredFn0>
+    | Fn0<A, A[K] & WiredFn0>
 }
 
 /**
  * Partially applies (wires) the given app's implementation and returns the app's API.
  */
-export function frapp<A extends WiredApp>(
-  app: App<A>,
-  container?: HTMLElement
-): A {
+export function frapp<A>(app: AppImpl<A>, container?: HTMLElement): A {
   const root = container || document.body
   let node = vnode(root.children[0], [].map)
   let patchLock = false
@@ -94,7 +78,7 @@ export function frapp<A extends WiredApp>(
 
   return global
 
-  function wire<A2 extends WiredApp>(app: App<A2>, path: string[]): A2 {
+  function wire<A2>(app: AppImpl<A2>, path: string[]): A2 {
     const result: any = {}
     Object.keys(app).forEach(key => {
       if (typeof app[key] === "function") {
@@ -152,7 +136,7 @@ export function frapp<A extends WiredApp>(
 
   function render() {
     patchLock = !patchLock
-    const result = global.View ? global.View() : null
+    const result = global["View"] ? global["View"]() : null
     if (result && !patchLock) {
       patch(node, result, root as HTMLElement)
       node = result
