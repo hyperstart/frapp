@@ -1,4 +1,4 @@
-import { frapp, h, VNode, AppImpl } from "../src"
+import { frapp, h, VNode, AppImpl, WiredApp } from "../src"
 
 test("Types compile properly", done => {
   interface Counter {
@@ -23,7 +23,7 @@ test("Types compile properly", done => {
     counter2: counter
   }
 
-  interface App {
+  interface App extends WiredApp {
     counters: Counters
     counter: Counter
     name: string

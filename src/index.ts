@@ -55,6 +55,18 @@ export interface WiredFn {
 export type Fn<A, F extends WiredFn> = (app: A, update: Update<A>) => F
 
 /**
+ * The interface for the object received by `frapp()`.
+ */
+export interface WiredApp {
+  /**
+   * If exists, this function is re-triggered after every update (debounced).
+   *
+   * @returns the VNode tree to be merged in the DOM or falsy if no update wanted
+   */
+  View?: () => VNode<any>
+}
+
+/**
  * Type of an app for the given wired app.
  * @param A The type of the wired app.
  */
@@ -69,7 +81,10 @@ export type AppImpl<A> = {
 /**
  * Partially applies (wires) the given app's implementation and returns the app's API.
  */
-export function frapp<A>(app: AppImpl<A>, container?: HTMLElement): A {
+export function frapp<A extends WiredApp>(
+  app: AppImpl<A>,
+  container?: HTMLElement
+): A {
   const root = container || document.body
   let node = vnode(root.children[0], [].map)
   let patchLock = false
