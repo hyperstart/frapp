@@ -7,6 +7,11 @@ export { h }
 export type VNode<Props = any> = PicoNode<Props>
 
 /**
+ * VNodes accepted by the `h()` function
+ */
+export type VNodeChildren = Array<VNode | string> | VNode | string
+
+/**
  * The update function: takes a Partial of the app, and merges it into the current app's slice.
  * This function partially apply any function in the value, and returns the partially applied object.
  */
