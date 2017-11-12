@@ -1,6 +1,6 @@
 {
   "name": "frapp",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Tiny typescript library to build fractal webapps.",
   "main": "dist/frapp.js",
   "minified:main": "dist/frapp.min.js",
