@@ -86,7 +86,7 @@ export type AppImpl<A> = {
 /**
  * Partially applies (wires) the given app's implementation and returns the app's API.
  */
-export function frapp<A extends WiredApp>(
+export function frapp<A extends WiredApp = any>(
   app: AppImpl<A>,
   container?: HTMLElement
 ): A {
@@ -113,7 +113,11 @@ export function frapp<A extends WiredApp>(
 
           return value
         }
-      } else if (typeof app[key] === "object" && !Array.isArray(app[key])) {
+      } else if (
+        app[key] &&
+        typeof app[key] === "object" &&
+        !Array.isArray(app[key])
+      ) {
         // recursive call
         result[key] = wire(app[key], path.concat(key))
       } else {

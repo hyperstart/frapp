@@ -40,3 +40,11 @@ test("Apps are sliced", done => {
     }
   })
 })
+
+test("App works with null or undefined keys", done => {
+  frapp({
+    value: null,
+    value2: undefined,
+    View: app => <div oncreate={() => done()}>{app.value}</div>
+  })
+})
