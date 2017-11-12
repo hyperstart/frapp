@@ -2,7 +2,7 @@
 [![npm](https://img.shields.io/npm/v/frapp.svg)](http://npm.im/frapp)
 [![Travis CI](https://img.shields.io/travis/hyperstart/frapp/master.svg)](https://travis-ci.org/hyperstart/frapp)
 [![Codecov](https://img.shields.io/codecov/c/github/hyperstart/frapp/master.svg)](https://codecov.io/gh/hyperstart/frapp)
-[![gzip size](http://img.badgesize.io/https://unpkg.com/frapp/dist/index.js?compression=gzip)](https://unpkg.com/frapp/dist/index.js)
+[![gzip size](http://img.badgesize.io/https://unpkg.com/frapp/dist/frapp.min.js?compression=gzip)](https://unpkg.com/frapp/dist/frapp.min.js)
 
 Tiny fractal app framework strongly inspired by [Hyperapp](https://github.com/hyperapp/hyperapp), written in typescript.
 
