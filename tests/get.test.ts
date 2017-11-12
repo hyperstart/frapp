@@ -27,3 +27,9 @@ test("get with non existing key on array", done => {
   expect(get([1, 2], [9])).toBe(undefined)
   done()
 })
+
+test("get with string path", done => {
+  expect(get({ a: { b: false } }, "a.b")).toBe(false)
+  expect(get({ a: { b: false } }, "a.c")).toBe(undefined)
+  done()
+})

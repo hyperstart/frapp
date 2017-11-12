@@ -28,3 +28,8 @@ test("Set arrays with path", done => {
   expect(set([1, 2], [1], { value: 42 })).toEqual([1, { value: 42 }])
   done()
 })
+
+test("Set with string path", done => {
+  expect(set({}, "a.b.c", true)).toEqual({ a: { b: { c: true } } })
+  done()
+})

@@ -168,12 +168,13 @@ export function frapp<A extends WiredApp>(
 /**
  * Path: Array<string | number>
  */
-export type Path = Array<string | number>
+export type Path = Array<string | number> | string
 
 /**
  * Get the value at the given path in the given target, or undefined if path doesn't exists.
  */
 export function get<T = any, R = any>(target: T, path: Path): R {
+  path = typeof path === "string" ? path.split(".") : path
   let result: any = target
   for (var i = 0; i < path.length; i++) {
     result = result ? result[path[i]] : result
@@ -190,12 +191,13 @@ export function set<T = any, V = any, R = any>(
   path: Path,
   value: V
 ): R {
+  path = typeof path === "string" ? path.split(".") : path
   if (path.length === 0) {
     return (value as any) as R
   }
   return assign(Array.isArray(target) ? [] : {}, target, {
     [path[0]]:
-      path.length > 1 ? set(target[path[0]], path.slice(1), value) : value
+      path.length > 1 ? set(target[path[0]] || {}, path.slice(1), value) : value
   })
 }
 
