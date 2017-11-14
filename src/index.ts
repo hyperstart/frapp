@@ -84,6 +84,13 @@ export type AppImpl<A> = {
 }
 
 /**
+ * The interface for the frapp() function.
+ */
+export interface Frapp<A extends WiredApp> {
+  (app: AppImpl<A>, container?: HTMLElement): A
+}
+
+/**
  * Partially applies (wires) the given app's implementation and returns the app's API.
  */
 export function frapp<A extends WiredApp = any>(
@@ -230,5 +237,3 @@ function assign(target: any, obj: any, obj2: any): any {
   }
   return target
 }
-
-export default frapp
