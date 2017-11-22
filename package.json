@@ -52,6 +52,7 @@
     },
     "testRegex": "(/tests/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"],
+    "mapCoverage": true,
     "coverageThreshold": {
       "global": {
         "branches": 97.5,
