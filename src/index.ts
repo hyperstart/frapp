@@ -121,7 +121,7 @@ export function frapp<A extends WiredApp = any>(
 
           return value
         }
-        result[key].__UNWIRED = app[key]
+        result[key].__UNWIRED = fn
       } else if (
         app[key] &&
         typeof app[key] === "object" &&

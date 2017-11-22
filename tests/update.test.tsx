@@ -101,6 +101,12 @@ test("Update should accept wired functions", done => {
   expect(app.getApp()).toEqual(reWired.getApp())
   expect(app.getValue(42)).toBe(reWired.getValue(42))
 
+  const reWired2 = reWired.reWire()
+  expect(app.getApp()).toEqual(reWired2.getApp())
+  expect(app.getValue("getValue() should return me")).toBe(
+    reWired2.getValue("getValue() should return me")
+  )
+
   done()
 })
 
