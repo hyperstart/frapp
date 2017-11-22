@@ -103,3 +103,14 @@ test("Update should accept wired functions", done => {
 
   done()
 })
+
+test("Update doesn't modify app if parameter is falsy", done => {
+  const app = frapp<any>({
+    doNothing: (app, u) => u(false),
+    getApp: app => app
+  })
+
+  app.doNothing()
+  expect(app).toBe(app.getApp())
+  done()
+})
