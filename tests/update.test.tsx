@@ -89,3 +89,17 @@ test("Dynamically added apps should be properly wired", done => {
     View: app => <app.counter.View />
   }).addCounter()
 })
+
+test("Update should accept wired functions", done => {
+  const app = frapp<any>({
+    getApp: app => value => app,
+    getValue: app => value => value,
+    reWire: (app, u) => u(app)
+  })
+
+  const reWired = app.reWire()
+  expect(app.getApp()).toEqual(reWired.getApp())
+  expect(app.getValue(42)).toBe(reWired.getValue(42))
+
+  done()
+})

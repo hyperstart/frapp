@@ -110,9 +110,10 @@ export function frapp<A extends WiredApp = any>(
     const result: any = {}
     Object.keys(app).forEach(key => {
       if (typeof app[key] === "function") {
+        const fn = app[key].__UNWIRED ? app[key].__UNWIRED : app[key]
         // partially apply function
         result[key] = function() {
-          let value = app[key](get(global, path), update)
+          let value = fn(get(global, path), update)
 
           if (typeof value === "function") {
             value = value.apply(null, arguments)
@@ -120,6 +121,7 @@ export function frapp<A extends WiredApp = any>(
 
           return value
         }
+        result[key].__UNWIRED = app[key]
       } else if (
         app[key] &&
         typeof app[key] === "object" &&
