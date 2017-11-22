@@ -16,7 +16,7 @@ export type VNodeChildren = Array<VNode | string> | VNode | string
  * This function partially apply any function in the value, and returns the partially applied object.
  */
 export interface Update<A = any> {
-  (value: Partial<A>): Partial<A>
+  (value: Partial<AppImpl<A>>): Partial<A>
 }
 
 /**
