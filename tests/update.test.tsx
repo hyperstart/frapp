@@ -10,7 +10,7 @@ test("Update returns its argument.", done => {
     add: (app, u) => data => u({ count: app.count + data }),
     down: (app, u) => app.add(-1),
     up: (app, u) => app.add(1)
-  })
+  }).app()
 
   expect(app.add(5)).toEqual({ count: 5 })
   expect(app.up()).toEqual({ count: 6 })
@@ -28,7 +28,7 @@ test("Update partially applies app and returns it.", done => {
 
   const myApp: any = frapp<any>({
     addCounter: (app, u) => u({ counter }).counter
-  })
+  }).app()
 
   const applied = myApp.addCounter()
   expect(applied.add(5)).toEqual({ count: 5 })
@@ -87,7 +87,9 @@ test("Dynamically added apps should be properly wired", done => {
       return update({ counter })
     },
     View: app => <app.counter.View />
-  }).addCounter()
+  })
+    .app()
+    .addCounter()
 })
 
 test("Update should accept wired functions", done => {
@@ -95,7 +97,7 @@ test("Update should accept wired functions", done => {
     getApp: app => value => app,
     getValue: app => value => value,
     reWire: (app, u) => u(app)
-  })
+  }).app()
 
   const reWired = app.reWire()
   expect(app.getApp()).toEqual(reWired.getApp())
@@ -114,7 +116,7 @@ test("Update doesn't modify app if parameter is falsy", done => {
   const app = frapp<any>({
     doNothing: (app, u) => u(false),
     getApp: app => app
-  })
+  }).app()
 
   app.doNothing()
   expect(app).toBe(app.getApp())

@@ -51,7 +51,9 @@ test("Api call gets debounced", done => {
         {app.count}
       </div>
     )
-  }).fire()
+  })
+    .app()
+    .fire()
 })
 
 test("Api calls in view gets debounced", done => {

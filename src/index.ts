@@ -83,11 +83,15 @@ export type AppImpl<A> = {
     | Fn0<A, A[K] & WiredFn0>
 }
 
+export interface App<A extends WiredApp> {
+  app(): A
+}
+
 /**
  * The interface for the frapp() function.
  */
 export interface Frapp<A extends WiredApp> {
-  (app: AppImpl<A>, container?: HTMLElement): A
+  (app: AppImpl<A>, container?: HTMLElement): App<A>
 }
 
 /**
@@ -96,7 +100,7 @@ export interface Frapp<A extends WiredApp> {
 export function frapp<A extends WiredApp = any>(
   app: AppImpl<A>,
   container?: HTMLElement
-): A {
+): App<A> {
   const root = container || document.body
   let node = vnode(root.children[0], [].map)
   let patchLock = false
@@ -104,7 +108,11 @@ export function frapp<A extends WiredApp = any>(
 
   repaint()
 
-  return global
+  return {
+    app() {
+      return global
+    }
+  }
 
   function wire<A2>(app: AppImpl<A2>, path: string[]): A2 {
     const result: any = {}

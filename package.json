@@ -61,5 +61,8 @@
         "statements": 100
       }
     }
+  },
+  "prettier": {
+    "semi": false
   }
 }

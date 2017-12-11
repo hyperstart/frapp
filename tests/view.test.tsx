@@ -27,7 +27,7 @@ test("View gets called after each action", done => {
         {app.count}
       </div>
     )
-  })
+  }).app()
 
   const up = () => {
     expectedCount++
