@@ -168,6 +168,7 @@ export function frapp<A extends WiredApp = any>(
       )
     )
   }
+
   function repaint() {
     // if repaint is called multiple times between 2 renders (or during), only trigger one re-render
     if (!patchLock) {
@@ -178,7 +179,7 @@ export function frapp<A extends WiredApp = any>(
 
   function render() {
     patchLock = !patchLock
-    const result = global["View"] ? global["View"]() : null
+    const result = global.View ? global.View() : null
     if (result && !patchLock) {
       patch(node, result, root as HTMLElement)
       node = result
