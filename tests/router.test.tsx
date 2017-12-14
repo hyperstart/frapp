@@ -39,6 +39,7 @@ test("Router module listens to location changes", done => {
             break
           case 3:
             expect(app.router.location).toBe("/")
+            app.router.destroy()
             done()
             break
         }
