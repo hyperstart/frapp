@@ -3,3 +3,4 @@ dist
 npm-debug.log
 coverage
 .rpt2_cache
+.DS_Store
