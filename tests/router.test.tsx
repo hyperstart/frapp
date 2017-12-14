@@ -2,6 +2,7 @@ import {
   back,
   frapp,
   h,
+  Link,
   pushState,
   replaceState,
   router,
@@ -199,7 +200,7 @@ test("Route component matches path with ':id'", done => {
   }, 200)
 })
 
-test("Routes component works", done => {
+test("Routes component only renders one route", done => {
   const app = frapp({
     router: router(),
     View: app => {
@@ -239,4 +240,21 @@ test("Routes component works", done => {
   }).app()
 
   app.router.init()
+})
+
+test("Link changes location", done => {
+  frapp({
+    View: () => {
+      return (
+        <Link
+          href="/test"
+          oncreate={e => {
+            e.click()
+            expect(location.pathname).toBe("/test")
+            done()
+          }}
+        />
+      )
+    }
+  })
 })

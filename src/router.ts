@@ -165,6 +165,8 @@ export const back = (): void => {
 
 export interface LinkProps {
   href: string
+  // for now, allow any extra stuff...
+  [key: string]: any
 }
 
 export const Link = (props: LinkProps, children): VNode => {
