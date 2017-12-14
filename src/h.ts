@@ -10,6 +10,18 @@ export interface VNode<Props = any> {
 }
 
 /**
+ * Checks if the given parameter is a VNode.
+ */
+export const isVNode = (obj: any): obj is VNode => {
+  return (
+    obj &&
+    typeof obj.type === "string" &&
+    typeof obj.props === "object" &&
+    Array.isArray(obj.children)
+  )
+}
+
+/**
  * VNodes accepted by the `h()` function
  */
 export type VNodeChildren = Array<VNode | string> | VNode | string
