@@ -122,7 +122,11 @@ export const Routes = <Props = any>(
 ): VNode => {
   const { routes, ...rest } = <any>props
   return routes.reduce((prev, next) => {
-    return prev ? prev : next({ ...next, ...rest })
+    if (prev) {
+      return prev
+    }
+    const childProps = match(location.pathname, next.path, next.exact)
+    return childProps ? next.View({ ...rest, ...childProps }) : null
   }, null)
 }
 
