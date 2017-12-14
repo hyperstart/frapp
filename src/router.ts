@@ -105,11 +105,10 @@ export interface RouteProps<Props> {
   View: Component<Props & ViewProps>
 }
 
-export const Route = <Props = any>(props: RouteProps<Props> & Props): VNode => {
+export const Route = <Props = any>(props: RouteProps<Props>): VNode => {
   const { path, exact, View, ...rest } = <any>props
   const childProps = match(location.pathname, path, exact)
-
-  return childProps ? View({ ...rest, childProps }) : null
+  return childProps ? View({ ...rest, ...childProps }) : null
 }
 
 // # Routes
