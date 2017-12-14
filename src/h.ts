@@ -15,6 +15,13 @@ export interface VNode<Props = any> {
 export type VNodeChildren = Array<VNode | string> | VNode | string
 
 /**
+ * The interface for a component.
+ */
+export interface Component<P = any> {
+  (props: P, children: VNode[]): VNode
+}
+
+/**
  * Re-export picodom's h() function.
  */
 export { h }
