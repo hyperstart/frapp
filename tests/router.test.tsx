@@ -259,3 +259,26 @@ test("Link changes location", done => {
     }
   })
 })
+
+test("Router functions handle corner cases", done => {
+  const _pushState = history.pushState
+  history.pushState = null
+  const _replaceState = history.replaceState
+  history.replaceState = null
+  const _back = history.back
+  history.back = null
+
+  try {
+    pushState("/anything")
+    expect(window.location.pathname).toBe("/")
+    replaceState("/somethingElse")
+    expect(window.location.pathname).toBe("/")
+    back()
+    expect(window.location.pathname).toBe("/")
+    done()
+  } finally {
+    history.pushState = _pushState
+    history.replaceState = _replaceState
+    history.back = _back
+  }
+})

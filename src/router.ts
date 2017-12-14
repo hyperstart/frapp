@@ -38,9 +38,7 @@ export const router = (): AppImpl<Router> => {
     destroy: (app, u): void => {
       removeEventListener("popstate", listener)
       const index = UPDATE_LOCATIONS.indexOf(app.updateLocation)
-      if (index >= 0) {
-        UPDATE_LOCATIONS.splice(index, 1)
-      }
+      UPDATE_LOCATIONS.splice(index, 1)
     }
   }
 }
