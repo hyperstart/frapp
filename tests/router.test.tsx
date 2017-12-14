@@ -6,7 +6,7 @@ import {
   replaceState,
   router,
   Route,
-  Router
+  Routes
 } from "../src"
 
 beforeEach(() => {
@@ -22,13 +22,26 @@ test("Router module listens to location changes", done => {
     View: app => {
       const oncreate = () => {
         expect(app.router.location).toBe("/")
+        pushState("/test1")
+        count++
       }
 
       const onupdate = () => {
-        expect(app.router.location).toBe(expected)
-        if (++count === 3) {
-          done()
+        switch (count) {
+          case 1:
+            expect(app.router.location).toBe("/test1")
+            replaceState("/test2")
+            break
+          case 2:
+            expect(app.router.location).toBe("/test2")
+            back()
+            break
+          case 3:
+            expect(app.router.location).toBe("/")
+            done()
+            break
         }
+        count++
       }
 
       return <div oncreate={oncreate} onupdate={onupdate} />
@@ -36,19 +49,6 @@ test("Router module listens to location changes", done => {
   }).app()
 
   app.router.init()
-
-  setTimeout(() => {
-    pushState("/test1")
-    expected = "/test1"
-  }, 50)
-  setTimeout(() => {
-    replaceState("/test2")
-    expected = "/test2"
-  }, 100)
-  setTimeout(() => {
-    back()
-    expected = "/"
-  }, 150)
 })
 
 test("Route component matches for exact path", done => {
@@ -200,5 +200,55 @@ test("Route component matches path with ':id'", done => {
 })
 
 // test("Routes component works", done => {
-//   done()
+//   let count = 0
+//   const app = frapp({
+//     router: router(),
+//     View: app => {
+//       const View1 = () => (
+//         <div oncreate={() => fail("View1 should never be created")} />
+//       )
+//       const View2 = () => (
+//         <div
+//           oncreate={() => {
+//             expect(count).toBe(1)
+//             done()
+//           }}
+//         />
+//       )
+//       const View3 = () => (
+//         <div oncreate={() => fail("View3 should never be created")} />
+//       )
+//       const View4 = () => <div oncreate={() => count++} />
+
+//       return (
+//         <Routes
+//           routes={[
+//             {
+//               path: "/test1/test2",
+//               View: View1
+//             },
+//             {
+//               path: "/test1/:id",
+//               View: View2
+//             },
+//             {
+//               path: "/test1",
+//               View: View3
+//             },
+//             {
+//               path: "/",
+//               View: View4
+//             }
+//           ]}
+//         />
+//       )
+//     }
+//   }).app()
+
+//   app.router.init()
+
+//   // should not create the view
+//   setTimeout(() => {
+//     pushState("/test1/blah")
+//   }, 50)
 // })

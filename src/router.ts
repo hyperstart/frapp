@@ -113,11 +113,11 @@ export const Route = <Props = any>(props: RouteProps<Props>): VNode => {
 
 // # Routes
 
-export interface RoutesProps<Props extends ViewProps = any> {
+export interface RoutesProps<Props = any> {
   routes: RouteProps<Props>[]
 }
 
-export const Routes = <Props extends ViewProps = any>(
+export const Routes = <Props = any>(
   props: RoutesProps<Props> & Props
 ): VNode => {
   const { routes, ...rest } = <any>props
