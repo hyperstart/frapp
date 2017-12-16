@@ -75,7 +75,7 @@ test("replacing an app with a function calls onRemove", done => {
     },
     test: (app, u) => {
       expect(path).toBe("+m1+app")
-      u({ m1: () => console.log("test") })
+      u({ m1: () => fail("should not be called.") })
       expect(path).toBe("+m1+app-m1")
       done()
     }

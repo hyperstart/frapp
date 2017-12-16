@@ -137,7 +137,6 @@ export function frapp<A extends WiredApp = any>(
         const fn = app[key].__UNWIRED ? app[key].__UNWIRED : app[key]
         // partially apply function
         result[key] = function() {
-          // console.log("Calling " + path.join(".") + " key " + key)
           let value = fn(get(global, path), update)
 
           if (typeof value === "function") {
@@ -166,7 +165,6 @@ export function frapp<A extends WiredApp = any>(
     })
 
     if (!current && typeof result.onWire === "function") {
-      // console.log("Adding onWire for path: " + path.join("."))
       callbacks.push(result.onWire)
     }
     return result
@@ -209,7 +207,6 @@ export function frapp<A extends WiredApp = any>(
 
   function repaint() {
     // trigger the lifecycle events, if any
-    // console.log("callbacks: " + callbacks.length)
     let c
     while ((c = callbacks.shift())) {
       c()
