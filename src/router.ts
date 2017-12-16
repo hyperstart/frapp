@@ -1,17 +1,15 @@
-import { AppImpl } from "./frapp"
+import { AppImpl, Lifecycle } from "./frapp"
 import { h, Component, isVNode, VNode } from "./h"
 
 // # Router Module
 
 const UPDATE_LOCATIONS = []
 
-export interface Router {
+export interface Router extends Lifecycle {
   /** State */
   location: string
   /** Methods */
   updateLocation(): void
-  init(): void
-  destroy(): void
 }
 
 export const router = (): AppImpl<Router> => {
@@ -27,7 +25,7 @@ export const router = (): AppImpl<Router> => {
         u({ location })
       }
     },
-    init: (app, u): void => {
+    onWire: (app, u): void => {
       listener = (e: PopStateEvent) => {
         app.updateLocation()
       }
@@ -35,7 +33,7 @@ export const router = (): AppImpl<Router> => {
       addEventListener("popstate", listener)
       UPDATE_LOCATIONS.push(app.updateLocation)
     },
-    destroy: (app, u): void => {
+    onRemove: (app, u): void => {
       removeEventListener("popstate", listener)
       const index = UPDATE_LOCATIONS.indexOf(app.updateLocation)
       UPDATE_LOCATIONS.splice(index, 1)

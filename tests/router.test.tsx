@@ -18,7 +18,7 @@ beforeEach(() => {
 test("Router module listens to location changes", done => {
   let expected = "/"
   let count = 0
-  const app = frapp({
+  frapp({
     router: router(),
     View: app => {
       const oncreate = () => {
@@ -39,7 +39,7 @@ test("Router module listens to location changes", done => {
             break
           case 3:
             expect(app.router.location).toBe("/")
-            app.router.destroy()
+            app.router.onRemove()
             done()
             break
         }
@@ -48,13 +48,11 @@ test("Router module listens to location changes", done => {
 
       return <div oncreate={oncreate} onupdate={onupdate} />
     }
-  }).app()
-
-  app.router.init()
+  })
 })
 
 test("Route component matches for exact path", done => {
-  const app = frapp({
+  frapp({
     router: router(),
     View: app => {
       const oncreate = () => {
@@ -66,9 +64,7 @@ test("Route component matches for exact path", done => {
 
       return <Route path="/test1" exact={true} View={View} />
     }
-  }).app()
-
-  app.router.init()
+  })
 
   // should not create the view
   setTimeout(() => {
@@ -85,7 +81,7 @@ test("Route component matches for exact path", done => {
 })
 
 test("Route component matches for non-exact path", done => {
-  const app = frapp({
+  frapp({
     router: router(),
     View: app => {
       const oncreate = () => {
@@ -97,9 +93,7 @@ test("Route component matches for non-exact path", done => {
 
       return <Route path="/test1" View={View} />
     }
-  }).app()
-
-  app.router.init()
+  })
 
   // should not create the view
   setTimeout(() => {
@@ -112,7 +106,7 @@ test("Route component matches for non-exact path", done => {
 })
 
 test("Route component matches path with '*'", done => {
-  const app = frapp({
+  frapp({
     router: router(),
     View: app => {
       const oncreate = () => {
@@ -124,9 +118,7 @@ test("Route component matches path with '*'", done => {
 
       return <Route path="/test1/*/test3" View={View} />
     }
-  }).app()
-
-  app.router.init()
+  })
 
   // should not create the view
   setTimeout(() => {
@@ -148,7 +140,7 @@ test("Route component matches path with '*'", done => {
 })
 
 test("Route component matches any location with path='*'", done => {
-  const app = frapp({
+  frapp({
     router: router(),
     View: app => {
       const oncreate = () => {
@@ -160,13 +152,11 @@ test("Route component matches any location with path='*'", done => {
 
       return <Route path="*" View={View} />
     }
-  }).app()
-
-  app.router.init()
+  })
 })
 
 test("Route component matches path with ':id'", done => {
-  const app = frapp({
+  frapp({
     router: router(),
     View: app => {
       const oncreate = () => {
@@ -179,9 +169,7 @@ test("Route component matches path with ':id'", done => {
 
       return <Route path="/test1/:id/test3" View={View} />
     }
-  }).app()
-
-  app.router.init()
+  })
 
   // should not create the view
   setTimeout(() => {
@@ -202,7 +190,7 @@ test("Route component matches path with ':id'", done => {
 })
 
 test("Routes component only renders one route", done => {
-  const app = frapp({
+  frapp({
     router: router(),
     View: app => {
       const View1 = () => (
@@ -238,9 +226,7 @@ test("Routes component only renders one route", done => {
         />
       )
     }
-  }).app()
-
-  app.router.init()
+  })
 })
 
 test("Link changes location", done => {
