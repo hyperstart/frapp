@@ -9,18 +9,18 @@
   "typings": "dist/index.d.ts",
   "license": "MIT",
   "repository": "hyperstart/frapp",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "author": "Anthony Ferrando <ferrando.tony@gmail.com>",
   "scripts": {
     "clean": "rimraf dist .rpt2_cache",
-    "build":
-      "npm run clean && npm run build:module && npm run build:main && npm run build:min",
+    "build": "npm run clean && npm run build:module && npm run build:main && npm run build:min",
     "build:main": "rollup -c && rimraf .rpt2_cache",
     "build:min": "rollup -c --min && bundlesize && rimraf .rpt2_cache",
     "build:module": "rollup -c --es && rimraf .rpt2_cache",
     "test": "jest --coverage",
-    "release":
-      "npm run build && npm test && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
+    "release": "npm run build && npm test && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
   },
   "dependencies": {
     "picodom": "1.0.2"
@@ -37,8 +37,8 @@
     "rollup-plugin-typescript2": "0.8.0",
     "rollup-plugin-uglify": "2.0.1",
     "ts-jest": "^21.1.4",
-    "typescript": "2.6.1",
-    "uglify-js": "^2.7.5"
+    "typescript": "2.6.2",
+    "uglify-js": "3.2.2"
   },
   "bundlesize": [
     {
@@ -51,7 +51,13 @@
       "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
     "testRegex": "(/tests/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ],
     "testURL": "http://test.com",
     "mapCoverage": true,
     "coverageThreshold": {
