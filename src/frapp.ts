@@ -64,6 +64,28 @@ export interface WiredApp {
 }
 
 /**
+ * The interface for modules implementing lifecyle events.
+ * This interface shows all supported lifecycle methods on modules.
+ * This interface is mainly for documentation purpose.
+ * It is not needed to extend it when implementing modules.
+ * Just create the desired methods in the corresponding module.
+ */
+export interface Lifecycle {
+  /**
+   * Called by frapp() when a module is attached to the main app tree.
+   * This method is always called before the view.
+   * This method is also called on the main application itself, before the first render.
+   */
+  onWire?(): void
+  /**
+   * Called by frapp() when a module is removed from the main app tree.
+   * This method is always called before the view.
+   * This method is *NOT* called on the main application itself, since it cannot be "removed" from itself.
+   */
+  onRemove?(): void
+}
+
+/**
  * Type of an app for the given wired app.
  * @param A The type of the wired app.
  */
@@ -96,6 +118,7 @@ export function frapp<A extends WiredApp = any>(
   const root = container || document.body
   let node = vnode(root.children[0], [].map)
   let patchLock = false
+  const callbacks = []
   let global = wire<A>(app, [])
 
   repaint()
@@ -108,11 +131,13 @@ export function frapp<A extends WiredApp = any>(
 
   function wire<A2>(app: AppImpl<A2>, path: string[]): A2 {
     const result: any = {}
+    const current = get(global, path)
     Object.keys(app).forEach(key => {
       if (typeof app[key] === "function") {
         const fn = app[key].__UNWIRED ? app[key].__UNWIRED : app[key]
         // partially apply function
         result[key] = function() {
+          // console.log("Calling " + path.join(".") + " key " + key)
           let value = fn(get(global, path), update)
 
           if (typeof value === "function") {
@@ -122,18 +147,28 @@ export function frapp<A extends WiredApp = any>(
           return value
         }
         result[key].__UNWIRED = fn
-      } else if (
-        app[key] &&
-        typeof app[key] === "object" &&
-        !Array.isArray(app[key])
-      ) {
+
+        if (current && isAppImpl(current[key])) {
+          unwire(current[key])
+        }
+      } else if (isAppImpl(app[key])) {
         // recursive call
         result[key] = wire(app[key], path.concat(key))
       } else {
         // just set
         result[key] = app[key]
+
+        // if app replaced by primitive type
+        if (current && isAppImpl(current[key])) {
+          unwire(current[key])
+        }
       }
     })
+
+    if (!current && typeof result.onWire === "function") {
+      // console.log("Adding onWire for path: " + path.join("."))
+      callbacks.push(result.onWire)
+    }
     return result
 
     function update(slice) {
@@ -144,6 +179,17 @@ export function frapp<A extends WiredApp = any>(
       }
       return slice
     }
+  }
+
+  function unwire(app: any): void {
+    if (app.onRemove) {
+      callbacks.push(app.onRemove)
+    }
+    Object.keys(app).forEach(key => {
+      if (isAppImpl(app[key])) {
+        unwire(app[key])
+      }
+    })
   }
 
   function vnode(element, map) {
@@ -162,6 +208,12 @@ export function frapp<A extends WiredApp = any>(
   }
 
   function repaint() {
+    // trigger the lifecycle events, if any
+    // console.log("callbacks: " + callbacks.length)
+    let c
+    while ((c = callbacks.shift())) {
+      c()
+    }
     // if repaint is called multiple times between 2 renders (or during), only trigger one re-render
     if (!patchLock) {
       patchLock = !patchLock
@@ -173,6 +225,7 @@ export function frapp<A extends WiredApp = any>(
   function render() {
     patchLock = !patchLock
     // patchLock is now false, allowing actions to be called inside the view and retrigger a repaint()
+    // call the view
     const result = global.View ? global.View() : null
     // only patch if repaint NOT triggered in the view.
     if (result && !patchLock) {
@@ -180,4 +233,11 @@ export function frapp<A extends WiredApp = any>(
       node = result
     }
   }
+}
+
+/**
+ * Check if the given value is an object, but not an array.
+ */
+function isAppImpl(value: any): boolean {
+  return value && typeof value === "object" && !Array.isArray(value)
 }
