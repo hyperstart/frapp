@@ -4,47 +4,56 @@
 [![Codecov](https://img.shields.io/codecov/c/github/hyperstart/frapp/master.svg)](https://codecov.io/gh/hyperstart/frapp)
 [![gzip size](http://img.badgesize.io/https://unpkg.com/frapp/dist/frapp.min.js?compression=gzip)](https://unpkg.com/frapp/dist/frapp.min.js)
 
-Tiny fractal app framework strongly inspired by [Hyperapp](https://github.com/hyperapp/hyperapp), written in typescript.
 
-Features:
- - tiny size
- - functional reactive architecture (state -> view -> actions -> new state -> ...)
- - immutable state allows for powerful debug tools
- - fractal design: make apps composed of apps (it's apps all the way down!)
- - dynamically add sub-apps to main app
+Frapp is a tiny front-end framework that allows to write web applications a as set of indepented modules that get composed in interesting ways.
 
-# Examples & How to
+Design goals & principles:
+ - fully featured: VDOM, state management, routing, immutability helpers
+ - Opinioniated architecture, half way between functional programming and OOP
+ - Simple, no magic
+ - Easy & fast to learn
+ - Tiny size
 
-## 1. Hello World
-This simple example shows basic features:
+Each module manages its own state and exposes an public interface for other modules to call.
+
+Modules are simple javascript objects containing:
+ - state: primitive types or arrays
+ - functions that operate on this state, referred as methods
+ - other modules
+
+Basic example:
 ```javascript
 import { frapp, h } from "frapp"
 
 frapp({
-  // state 
+
+  /** State */
   name: "World",
-  // actions (update the state and triggers a re-render)
+
+  /** Methods */
+
+  /**
+   * frapp() inject (app, update) for you, so that this method becomes (event) => { ... } when accessed by other methods.
+   * This process is refered as "wiring" in other parts of the documentation.
+   * 
+   * app always contains the latest state as well as all the wired methods.
+   * update() takes an updated value and applies it to the current module (it may update state, methods or even modules!).
+   * 
+   * In this case, the name is updated with the value of the input.
+   */
   setName: (app, update) => event => update({ name: event.target.value })
-  // view (pure function of state/actions)
-  View: (app) => (
-    <h1>Hello {app.name}!</h1>
-    Name: <input type="text" value={app.name} onchange={app.setName}>
-  )
-})
-```
-
-## 2. Todo List
-/!\ EXAMPLE NOT FINISHED /!\
-This more advanced example shows how to compose sub-apps together and dynamically add them to the main app.
-```javascript
-import { frapp, h } from "frapp"
-
-const createTodo = (title) => ({
-  // TODO
-})
-
-app({
-  // TODO
+  
+  /**
+   * This is just another method, frapp() expects the root module to have a View() method that
+   * returns the content of the view.
+   * Note the callback: onchange={app.setName} refers to the "injected" 
+   */
+  View: (app) => {
+    return (
+      <h1>Hello {app.name}!</h1>
+      Name: <input type="text" value={app.name} onchange={app.setName}>
+    )
+  }
 })
 ```
 
