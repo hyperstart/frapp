@@ -23,7 +23,7 @@
     "release": "npm run build && npm test && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
   },
   "dependencies": {
-    "picodom": "1.0.2"
+    "picodom": "git+https://git@github.com/picodom/picodom.git"
   },
   "devDependencies": {
     "@types/jest": "^21.1.5",
