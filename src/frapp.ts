@@ -226,7 +226,7 @@ export function frapp<A extends WiredApp = any>(
     const result = global.View ? global.View() : null
     // only patch if repaint NOT triggered in the view.
     if (result && !patchLock) {
-      patch(node, result, root as HTMLElement)
+      patch(root as HTMLElement, node, result)
       node = result
     }
   }
